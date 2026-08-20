@@ -1,0 +1,73 @@
+# Actualización automática diaria de datos y señales.
+#
+# Se ejecuta a las 7:00 de la mañana, hora de Nueva York, todos los días
+# laborables. GitHub Actions trabaja en UTC, así que la hora se expresa
+# considerando ambos husos:
+#
+#   - Horario de verano (marzo–noviembre): NY = UTC-4  ->  11:00 UTC
+#   - Horario de invierno (noviembre–marzo): NY = UTC-5  ->  12:00 UTC
+#
+# Se programan las dos horas y el propio trabajo comprueba cuál corresponde,
+# porque GitHub Actions no admite husos horarios con cambio estacional.
+
+name: Actualizar datos y señales
+
+on:
+  schedule:
+    - cron: "0 11 * * 1-5"   # 7:00 NY en horario de verano
+    - cron: "0 12 * * 1-5"   # 7:00 NY en horario de invierno
+  workflow_dispatch:          # permite lanzarlo a mano desde GitHub
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Comprobar que son las 7:00 en Nueva York
+        id: hora
+        run: |
+          HORA_NY=$(TZ="America/New_York" date +%H)
+          echo "Hora actual en Nueva York: ${HORA_NY}"
+          if [ "$HORA_NY" = "07" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ejecutar=si" >> $GITHUB_OUTPUT
+          else
+            echo "ejecutar=no" >> $GITHUB_OUTPUT
+            echo "No son las 7:00 en Nueva York; se omite esta ejecución."
+          fi
+
+      - name: Preparar Python
+        if: steps.hora.outputs.ejecutar == 'si'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        if: steps.hora.outputs.ejecutar == 'si'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Descargar datos de mercado
+        if: steps.hora.outputs.ejecutar == 'si'
+        run: python scripts/descargar_datos.py --anios 10
+
+      - name: Revisar la calidad de los datos
+        if: steps.hora.outputs.ejecutar == 'si'
+        run: python scripts/revisar_calidad.py --detalle
+        continue-on-error: true
+
+      - name: Generar señales del día
+        if: steps.hora.outputs.ejecutar == 'si'
+        run: python scripts/ordenes_del_dia.py
+
+      - name: Publicar resultados
+        if: steps.hora.outputs.ejecutar == 'si'
+        uses: actions/upload-artifact@v4
+        with:
+          name: senales-${{ github.run_number }}
+          path: |
+            senales.csv
+            ordenes.csv
+          retention-days: 30

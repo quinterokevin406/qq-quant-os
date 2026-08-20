@@ -1,0 +1,17 @@
+# Tema oscuro azul marino, en línea con la identidad de QQ Quant.
+# Los colores coinciden con dashboard/assets/logo.py; si cambian aquí, hay
+# que cambiarlos allí también.
+
+[theme]
+base = "dark"
+primaryColor = "#4a6fa5"
+backgroundColor = "#0a1220"
+secondaryBackgroundColor = "#111c2e"
+textColor = "#e8ecf1"
+font = "sans serif"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false

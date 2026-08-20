@@ -1,0 +1,15 @@
+# Dependencias para el despliegue en Streamlit Community Cloud.
+#
+# Streamlit Cloud lee este archivo, no pyproject.toml. Se mantiene sincronizado
+# a mano con las dependencias declaradas allí. Las versiones se fijan por
+# mínimo, no por igualdad, para recibir correcciones de seguridad sin quedar
+# atados a una versión concreta.
+
+pydantic>=2.5
+pandas>=2.0
+numpy>=1.24
+streamlit>=1.30
+yfinance>=0.2.40
+matplotlib>=3.7
+plotly>=5.18
+psycopg2-binary>=2.9

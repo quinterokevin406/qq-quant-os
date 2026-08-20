@@ -1,0 +1,24 @@
+# Entorno virtual
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Datos generados: se reconstruyen ejecutando los scripts.
+# No se versionan porque son grandes, cambian a diario y no son código.
+*.db
+*.csv
+*.html
+
+# Secretos
+.env
+.streamlit/secrets.toml
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
